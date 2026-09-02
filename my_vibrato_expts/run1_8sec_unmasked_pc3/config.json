@@ -1,0 +1,91 @@
+{
+  "experiment": "run1_8sec_unmasked_pc3",
+  "description": "Reproduction attempt of the 'Vibrato strength' unsupervised-editing example (PC #3) from the AudioLDM2 unsupervised zero-shot editing method (ZEUS), as shown on the project page https://hilamanor.github.io/AudioEditing/ and Figure 4(b) of the paper (arXiv:2402.10009). This run uses the site's exact 8-second demo clip, with no spectral mask applied.",
+  "source": {
+    "repo": "https://github.com/SairajLoke/AudioEditingCode (fork of https://github.com/HilaManor/AudioEditingCode)",
+    "branch": "codeclean",
+    "commit": "8dc937701a42f6fb53160912f8a96b42fe8261d8",
+    "reference_example": "docs/index.html row 4, 'Various Samples (PC direction changes)' table, label 'Vibrato strength'"
+  },
+  "input_audio": {
+    "identity": "MedleyDB MusicDelta_Gospel excerpt, 8-second clip as used on the project page",
+    "source_file": "docs/resources/audio/orig/MDDBGospel_8secs.mp3 (from HilaManor/AudioEditingCode)",
+    "preprocessing": "converted mp3 -> wav, 16kHz mono 16-bit PCM via ffmpeg (required: audioldm.utils.get_duration uses Python's stdlib wave module, which cannot read mp3)",
+    "duration_sec": 8.19
+  },
+  "model": {
+    "model_id": "cvssp/audioldm2-music",
+    "num_diffusion_steps": 200,
+    "source_prompt": "A recording of ryhtmic clapping, a women singing, and drums and guitar playing.",
+    "prompt_source": "verbatim from docs/index.html row 4 'Inversion Prompt' column (typo 'ryhtmic' preserved as-is, since it is what was actually used and affects the text embedding)"
+  },
+  "commands": {
+    "step1_pc_extraction": "CUDA_VISIBLE_DEVICES=0 python main_pc_extract_inv.py --init_aud MDDBGospel_8secs.wav --model_id cvssp/audioldm2-music --source_prompt \"A recording of ryhtmic clapping, a women singing, and drums and guitar playing.\" --results_path pc_extractions --drift_start 150 --drift_end -1 --n_evs 3",
+    "step2_apply_drift_amount_plus2": "CUDA_VISIBLE_DEVICES=0 python main_pc_apply_drift.py --extraction_path <extraction .pt from step1> --drift_start 150 --drift_end -1 --use_specific_ts_pc 120 --evs 3 --amount 2",
+    "step2_apply_drift_amount_minus2": "CUDA_VISIBLE_DEVICES=0 python main_pc_apply_drift.py --extraction_path <extraction .pt from step1> --drift_start 150 --drift_end -1 --use_specific_ts_pc 120 --evs 3 --amount -2"
+  },
+  "key_parameters": {
+    "drift_start": 150,
+    "drift_end": -1,
+    "n_evs": 3,
+    "evs_applied": [3],
+    "use_specific_ts_pc": 120,
+    "amount": [2, -2],
+    "iters_power_iteration": 50,
+    "const": 0.001,
+    "seed": null,
+    "patch_mask": null,
+    "combine_evs": false,
+    "note_on_evals_pt": "repo default (--evals_pt ./eigvals.pt) points to a dataset-averaged eigenvalue file the repo never ships; patched main_pc_apply_drift.py line 31 default from './eigvals.pt' to None so it falls back to the extraction's own per-timestep eigenvalues (the behavior the README describes as 'leave --evals_pt empty', which the actual `is not None` check in the code does not achieve with an empty string)"
+  },
+  "environment": {
+    "gpu": "NVIDIA GeForce RTX 5070 Ti, 16GB VRAM (Blackwell, sm_120)",
+    "driver": "570.195.03, CUDA runtime ceiling 12.8",
+    "python": "3.12.3",
+    "key_packages": {
+      "torch": "2.11.0+cu128",
+      "torchaudio": "2.11.0+cu128",
+      "torchcodec": "0.11.1+cu128",
+      "transformers": "4.44.2",
+      "diffusers": "0.30.0",
+      "huggingface-hub": "0.36.2",
+      "numpy": "1.26.4",
+      "librosa": "0.9.2"
+    },
+    "full_pip_freeze": "../pip_freeze_working_env.txt",
+    "note": "repo requirements.txt does not pin torch/transformers/diffusers/huggingface-hub; the repo is 2024-era code and the default latest versions of these (as of this run, e.g. transformers 5.16.1, diffusers 0.40.0, huggingface-hub 1.29.0) are mutually incompatible with each other and with this codebase's assumptions. Versions above are what was pinned to get a working environment; see pip_freeze_working_env.txt for the complete resolved set."
+  },
+  "runtime": {
+    "pc_extraction_wallclock_min": 26,
+    "apply_drift_wallclock_sec_each": 40,
+    "extraction_iteration_rate": "~9.7 sec/iteration for the ~150 PC-extraction timesteps (drift_start=150 covers almost the full 200-step trajectory)"
+  },
+  "outputs": {
+    "orig.wav": "true source clip, re-synthesized: mel-spectrogram extraction + HiFi-GAN vocoding of the raw input (not byte-identical to the source mp3, but a faithful reference)",
+    "reconstruction_noPC.wav": "sanity-check baseline: DDPM-inverted then regenerated with the SAME source-prompt conditioning and ZERO drift applied. Tests inversion fidelity independent of any PC edit.",
+    "extraction_spectrogram.png": "mel-spectrogram of reconstruction_noPC.wav, auto-saved by main_pc_extract_inv.py",
+    "corrs.png": "diagnostic: cosine-correlation of each PC's eigenvector between consecutive extraction timesteps (for PC 1/2/3). Values stayed near 0 (not near +-1) throughout, meaning PC identity is not stable across timesteps in this run -- this is the reason the method freezes a single timestep's direction (use_specific_ts_pc) rather than trusting a per-timestep-varying direction.",
+    "MDDBGospel_pc3_a2.wav": "PC #3 applied with amount=+2 (frozen at t=120) across drift range [150,-1]",
+    "MDDBGospel_pc3_a-2.wav": "PC #3 applied with amount=-2 (same direction, opposite sign)",
+    "analysis_output.txt": "full stdout of analyze_vibrato.py (pitch/F0, vibrato-band oscillation, harmonic/percussive energy split, spectral diff between a2/a-2)"
+  },
+  "finding": {
+    "hypothesis_tested": "Does this independently-re-extracted PC #3 reproduce the paper's 'vibrato strength' effect?",
+    "verdict": "NOT CONFIRMED -- measured evidence points to an instrumental/percussive-balance change rather than an isolated vocal vibrato change.",
+    "evidence": [
+      "percussive_frac_of_total (harmonic/percussive RMS split): orig=0.558, reconstruction_noPC(baseline)=0.562 (consistent) vs a2=0.628, a-2=0.805 -- large, direction-dependent swing toward percussive/rhythmic content",
+      "median F0: orig/recon_noPC/a2 all ~83Hz (consistent) but a-2 jumps to ~294Hz (~2 octaves) -- inconsistent with a singer's fundamental simply gaining vibrato; suggests the pitch tracker is latching onto a different/altered harmonic source",
+      "spectral diff between a2 and a-2: the 15 largest per-frequency-bin differences are almost all under 200Hz (bass/kick-drum/low-guitar range), not the 300-3400Hz vocal formant range where vibrato would concentrate"
+    ],
+    "likely_causes": [
+      "no --seed fixed, so the independently-run power-iteration eigendecomposition likely converged to a different 3rd principal direction than the paper's original run",
+      "corrs.png shows PC identity is inherently unstable across timesteps even within this single run; freezing t=120 does not guarantee landing on whatever the paper's PC #3 represented",
+      "significant library-version drift (2024-era diffusers/transformers/torch vs. this run's versions) can shift the numerics of a higher-order eigenvector"
+    ],
+    "next_steps_if_pursuing_vibrato_specifically": [
+      "rerun with a fixed --seed for reproducibility across attempts",
+      "extract more PCs (raise --n_evs) and screen each with the same analysis script rather than trusting the index number",
+      "try the masked run (patch=[128,256], covering ~5-10s) -- confining extraction to a specific segment may isolate a cleaner direction; see ../run2_16sec_masked_pc3/ once complete"
+    ]
+  }
+}

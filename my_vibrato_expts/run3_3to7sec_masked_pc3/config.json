@@ -1,0 +1,32 @@
+{
+  "experiment": "run3_3to7sec_masked_pc3",
+  "description": "Same as run2_16sec_masked_pc3 but with the mask moved to 3-7s instead of 5-10s, per user request while diagnosing the 'voice breaking' issue. Fresh extraction required since the mask is baked in at extraction time, not apply time.",
+  "input_audio": "same as run2: first 16s of full MDDBGospel.mp3, 16kHz mono wav",
+  "mask": {
+    "requested_seconds": [3.0, 7.0],
+    "patch_latent_indices": [77, 179],
+    "derivation": "same 25.625 latent-frames/sec conversion as run2: 3*25.625=76.9->77, 7*25.625=179.4->179"
+  },
+  "model": {
+    "model_id": "cvssp/audioldm2-music",
+    "source_prompt": "A recording of ryhtmic clapping, a women singing, and drums and guitar playing."
+  },
+  "commands": {
+    "step1_pc_extraction": "CUDA_VISIBLE_DEVICES=0 python main_pc_extract_inv.py --init_aud MDDBGospel_16sec.wav --model_id cvssp/audioldm2-music --source_prompt \"A recording of ryhtmic clapping, a women singing, and drums and guitar playing.\" --results_path pc_extractions_masked --drift_start 150 --drift_end -1 --n_evs 3 --patch 77 179",
+    "step2_apply_drift": "CUDA_VISIBLE_DEVICES=0 python main_pc_apply_drift.py --extraction_path <extraction .pt> --drift_start 150 --drift_end -1 --use_specific_ts_pc 120 --evs 3 --fix_alpha 0.025 --amount 2 (and -2)"
+  },
+  "key_parameters": {
+    "drift_start": 150, "drift_end": -1, "n_evs": 3, "evs_applied": [3],
+    "use_specific_ts_pc": 120, "amount": [2, -2], "fix_alpha": 0.025,
+    "patch_mask": [77, 179], "seed": null
+  },
+  "runtime": {"pc_extraction_wallclock_min": 26.3, "apply_drift_wallclock_sec_each": 40},
+  "outputs": {
+    "orig.wav": "true source clip, re-synthesized (mel + HiFi-GAN vocoding)",
+    "reconstruction_noPC.wav": "zero-edit baseline (inversion + regeneration, same conditioning, no drift)",
+    "corrs.png": "eigenvector cosine-correlation across extraction timesteps (see run1's config.json for interpretation)",
+    "MDDBGospel_pc3_a2_fixalpha.wav / a-2_fixalpha.wav": "PC#3 applied at +-2, fix_alpha=0.025 from the start (this run never had a non-fixalpha version, since the leakage issue and its fix were already established by the time this ran)"
+  },
+  "context": "Triggered by user report that the 5-10s mask version's vocal edit sounded 'weird'/broken at the exact point of the effect. This run tests whether shifting the mask window (3-7s instead of 5-10s) changes that -- e.g. if 5-10s happened to land on a difficult vocal transition (word boundary, breath, consonant) in this specific recording. Listen and compare against run2's fixalpha files directly.",
+  "not_yet_done": "no amount/PC sweep run on this mask window (that diagnostic was only done for the 5-10s mask in run2b) -- if 3-7s also sounds broken at amount=2, the same sweep methodology from run2b could be applied here."
+}

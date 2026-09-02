@@ -1,0 +1,14 @@
+
+=== no_fix_alpha (original run2) ===
+  RMS(a2 - a-2) outside mask, 0-5s   : 0.06228
+  RMS(a2 - a-2) INSIDE mask, 5-10s    : 0.09164
+  RMS(a2 - a-2) outside mask, 10-16s  : 0.11303
+  ratio outside/inside (0-5s)   : 0.680
+  ratio outside/inside (10-16s) : 1.233
+
+=== fix_alpha=0.025 (corrected) ===
+  RMS(a2 - a-2) outside mask, 0-5s   : 0.01511
+  RMS(a2 - a-2) INSIDE mask, 5-10s    : 0.09821
+  RMS(a2 - a-2) outside mask, 10-16s  : 0.04458
+  ratio outside/inside (0-5s)   : 0.154
+  ratio outside/inside (10-16s) : 0.454

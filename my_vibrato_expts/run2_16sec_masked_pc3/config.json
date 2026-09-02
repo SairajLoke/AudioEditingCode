@@ -1,0 +1,101 @@
+{
+  "experiment": "run2_16sec_masked_pc3",
+  "description": "Follow-up to run1_8sec_unmasked_pc3: attempts to reproduce the paper's Figure 4(b) 'vibrato strength' example more faithfully by cropping to a longer excerpt and applying a spectral mask over the 5-10s window, matching the mask bracket visible in the pasted figure (the site's 8-second demo clip cannot contain a mask ending at 10s, so the figure must have used a longer, untrimmed excerpt).",
+  "source": {
+    "repo": "https://github.com/SairajLoke/AudioEditingCode (fork of https://github.com/HilaManor/AudioEditingCode)",
+    "branch": "codeclean",
+    "commit": "8dc937701a42f6fb53160912f8a96b42fe8261d8",
+    "reference": "paper Figure 4(b) (arXiv:2402.10009), described in text as 'we fix t'=120 and use Tstart=150, Tend=1... using a mask'"
+  },
+  "input_audio": {
+    "identity": "MedleyDB MusicDelta_Gospel excerpt, first 16 seconds of the FULL untrimmed track (not the site's 8-second demo clip)",
+    "source_file": "docs/resources/audio/orig/MDDBGospel.mp3 (77.65s full excerpt), cropped to first 16.0s via ffmpeg -t 16",
+    "preprocessing": "mp3 -> wav, 16kHz mono 16-bit PCM via ffmpeg, then cropped to 16s",
+    "duration_sec": 16.0,
+    "caveat": "the exact crop start/length the paper's authors used for this figure is not published anywhere; 16s was chosen because the figure's spectrogram x-axis only displays up to ~15s. This is a best-effort reconstruction of what the figure shows, not a verified match to the original experiment."
+  },
+  "mask": {
+    "requested_seconds": [5.0, 10.0],
+    "patch_latent_indices": [128, 256],
+    "derivation": "AudioLDM2's VAE (cvssp/audioldm2-music/vae/config.json) has 3 block_out_channels stages -> 2 downsample transitions -> 4x time compression on top of the mel spectrogram's 102.4 frames/sec, giving ~25.625 latent-frames/sec. Empirically verified by loading the 16s clip and checking the actual latent tensor shape ([1,8,410,16], time axis=410 -> 410/16=25.625 frames/sec, matching the analytical derivation). 5s*25.625=128.1, 10s*25.625=256.25, rounded to [128,256].",
+    "applied_during": "PC extraction only (--patch flag on main_pc_extract_inv.py); confines the region used to compute the posterior-covariance eigenvectors to this time window"
+  },
+  "model": {
+    "model_id": "cvssp/audioldm2-music",
+    "num_diffusion_steps": 200,
+    "source_prompt": "A recording of ryhtmic clapping, a women singing, and drums and guitar playing.",
+    "prompt_source": "same prompt reused from run1 (verbatim from docs/index.html row 4 'Inversion Prompt' column, typo 'ryhtmic' preserved) -- no dedicated caption exists for this 16-second crop, so the closest available description was kept for comparability with run1"
+  },
+  "commands": {
+    "step1_pc_extraction": "CUDA_VISIBLE_DEVICES=0 python main_pc_extract_inv.py --init_aud MDDBGospel_16sec.wav --model_id cvssp/audioldm2-music --source_prompt \"A recording of ryhtmic clapping, a women singing, and drums and guitar playing.\" --results_path pc_extractions_masked --drift_start 150 --drift_end -1 --n_evs 3 --patch 128 256",
+    "step2_apply_drift_amount_plus2": "CUDA_VISIBLE_DEVICES=0 python main_pc_apply_drift.py --extraction_path <extraction .pt from step1> --drift_start 150 --drift_end -1 --use_specific_ts_pc 120 --evs 3 --amount 2",
+    "step2_apply_drift_amount_minus2": "CUDA_VISIBLE_DEVICES=0 python main_pc_apply_drift.py --extraction_path <extraction .pt from step1> --drift_start 150 --drift_end -1 --use_specific_ts_pc 120 --evs 3 --amount -2",
+    "step2b_apply_drift_corrected_plus2": "same as step2_apply_drift_amount_plus2 plus --fix_alpha 0.025",
+    "step2b_apply_drift_corrected_minus2": "same as step2_apply_drift_amount_minus2 plus --fix_alpha 0.025"
+  },
+  "key_parameters": {
+    "drift_start": 150,
+    "drift_end": -1,
+    "n_evs": 3,
+    "evs_applied": [3],
+    "use_specific_ts_pc": 120,
+    "amount": [2, -2],
+    "iters_power_iteration": 50,
+    "const": 0.001,
+    "seed": null,
+    "patch_mask": [128, 256],
+    "combine_evs": false,
+    "evals_pt": "None (patched default, same as run1 -- uses this extraction's own per-timestep eigenvalues)"
+  },
+  "environment": {
+    "note": "identical environment to run1_8sec_unmasked_pc3; see ../run1_8sec_unmasked_pc3/config.json and ../pip_freeze_working_env.txt for full details",
+    "gpu": "NVIDIA GeForce RTX 5070 Ti, 16GB VRAM"
+  },
+  "runtime": {
+    "pc_extraction_wallclock_min": 26.6,
+    "apply_drift_wallclock_sec_each": 38,
+    "extraction_iteration_rate": "~10.5-10.7 sec/iteration (slightly slower than run1's 9.7s/it despite the mask, because the clip is 2x longer -- the mask limits which latent columns get eigenvector computation but the per-forward-pass cost still scales with the full clip's larger tensor size)"
+  },
+  "outputs": {
+    "orig.wav": "true source clip (first 16s of the full Gospel excerpt), re-synthesized via mel extraction + HiFi-GAN vocoding",
+    "reconstruction_noPC.wav": "sanity-check baseline: inverted then regenerated with the same conditioning, zero drift applied",
+    "extraction_spectrogram.png": "mel-spectrogram of reconstruction_noPC.wav",
+    "corrs.png": "eigenvector cosine-correlation between consecutive extraction timesteps for PC 1/2/3 (see run1's config.json for what this measures)",
+    "MDDBGospel_pc3_a2.wav": "PC #3 applied with amount=+2 (frozen at t=120), drift range [150,-1], extracted with the 5-10s mask. NO fix_alpha -- exhibits 'data leakage' outside the mask window (see leakage_check.txt).",
+    "MDDBGospel_pc3_a-2.wav": "PC #3 applied with amount=-2, same configuration, same leakage caveat",
+    "MDDBGospel_pc3_a2_fixalpha.wav": "corrected version: same as above but with --fix_alpha 0.025, which pulls the signal outside the mask back toward the unperturbed parallel trajectory at every timestep (paper eq. 6, App. D). This is the version that actually matches the paper's documented masking procedure -- the two non-fixalpha files above do not.",
+    "MDDBGospel_pc3_a-2_fixalpha.wav": "corrected version of a-2, same fix_alpha=0.025",
+    "analysis_output.txt": "full stdout of analyze_vibrato.py (pre-fix_alpha), adapted from run1's version to also report metrics restricted to the masked 5-10s window specifically",
+    "leakage_check.txt": "quantifies 'data leakage' outside the mask, before vs after fix_alpha=0.025 (see finding.data_leakage_correction below)"
+  },
+  "finding": {
+    "hypothesis_tested": "Does confining PC extraction to the 5-10s mask (per the paper figure) produce a cleaner vibrato-specific direction than the unmasked run1 attempt?",
+    "verdict": "SUPPORTED (with normal caveats about proxy DSP measures, not a listening test) -- this masked PC #3 behaves much more like an isolated vibrato control than the unmasked one from run1.",
+    "evidence": [
+      "percussive_frac_of_total stayed stable across all four files (orig=0.541, recon=0.530, a2=0.493, a-2=0.519, spread <0.05) -- contrast with run1's dramatic 0.558->0.805 swing. No instrumental-balance blowup.",
+      "median F0 stayed in one physically plausible register across all four files (~372-390Hz, <5% variation) -- contrast with run1's a-2 jumping ~2 octaves to ~294Hz, which indicated pitch-tracker derailment rather than a real vocal effect",
+      "vibrato-band oscillation RMS (cents) moved directionally as the paper's figure claims: orig=121.2, recon(baseline)=119.7, a2=113.2 (down), a-2=193.9 (up) -- i.e. +2PC=less pitch oscillation, -2PC=more, matching the figure's '+2PC -> Less vibrato / -2PC -> More vibrato' labeling",
+      "spectral difference between a2/a-2, restricted to the masked 5-10s window, concentrates around ~375-500Hz and its near-octave ~780-1000Hz -- i.e. right at the measured F0 and its 2nd harmonic -- rather than the sub-200Hz bass/drum region that dominated run1's diff"
+    ],
+    "relationship_to_run1": "run1's 'this is instruments, not vibrato' finding stands specifically for the UNMASKED extraction on the 8-second clip. This run suggests the mask (confining PC extraction to a vocal-active segment) was likely the actual missing ingredient for isolating a vibrato-like direction, consistent with the paper explicitly labeling Figure 4(b) as 'using a mask.'",
+    "remaining_caveats": [
+      "still proxy DSP evidence (pitch tracking + harmonic/percussive split + spectral diff), not a human listening confirmation -- audio should still be listened to directly",
+      "the exact input crop (first 16s) is a best-effort guess at what the paper's figure used, not a verified match",
+      "no seed fixed, so even this result is not guaranteed reproducible run-to-run -- rerunning with the same config could land on a different PC #3 again",
+      "median_f0_hz_masked_5to10s for a-2 came out numerically identical to recon_noPC's value (385.26118901858945) -- likely pyin discretization landing on the same bin rather than a meaningful coincidence, noted for transparency"
+    ]
+  },
+  "data_leakage_correction": {
+    "issue_raised_by_user": "why would a2/a-2 differ outside the 5-10s mask window at all, if extraction was masked to only that window?",
+    "root_cause": "the extracted eigenvector IS provably zero outside [128,256) in the latent -- verified directly in pc_drift.py:get_eigenvectors, where both the initial random perturbation (`eigvecs = randn_like(xt) * mask * const`) and the network's output at every power-iteration step (`out = unmaksed_out * mask`) are explicitly re-masked. So the DIRECTION itself is confined by construction. The leakage instead happens during APPLICATION: at each of the ~150 denoising steps, the perturbation is added to x0_pred only inside the mask, but that perturbed latent is then fed whole into the UNet for the next step, and the network's conv/attention layers mix information across the full time axis regardless of the mask -- so the edit's effect on masked columns bleeds into unmasked columns over many sequential steps. This is a named, documented phenomenon in the paper: Appendix D / Figure 14, 'data leakage... caused by the use of a UNet and attention modules as backbones.'",
+    "papers_fix": "eq. (6) in App. D: at every timestep, outside the mask, blend the edited trajectory back toward a PARALLEL UNPERTURBED trajectory: x[t-1] <- M*x[t-1] + (1-M)*(delta*x_orig[t-1] + (1-delta)*x[t-1]), with delta fixed to 0.025 in all their experiments. Implemented in this repo as `--fix_alpha` on main_pc_apply_drift.py (default None = off; the unperturbed parallel trajectory is read from the extraction checkpoint's cached `xts`, so no extra extraction/GPU cost is needed to enable it).",
+    "what_this_run_originally_did_wrong": "the original apply commands above (step2_apply_drift_amount_plus2/minus2) left --fix_alpha unset (None), so this correction was never applied -- MDDBGospel_pc3_a2.wav/a-2.wav do exhibit leakage outside the mask.",
+    "correction_applied": "reran apply with --fix_alpha 0.025 (matching the paper's delta) -> MDDBGospel_pc3_a2_fixalpha.wav / a-2_fixalpha.wav. No re-extraction needed.",
+    "quantitative_verification": {
+      "method": "RMS(a2 - a-2) computed separately for the 0-5s (pre-mask), 5-10s (inside mask), and 10-16s (post-mask) regions, before and after the fix. See leakage_check.txt.",
+      "no_fix_alpha": {"rms_diff_0to5s": 0.06228, "rms_diff_5to10s_inside": 0.09164, "rms_diff_10to16s": 0.11303, "outside/inside_ratio_pre": 0.680, "outside/inside_ratio_post": 1.233},
+      "fix_alpha_0.025": {"rms_diff_0to5s": 0.01511, "rms_diff_5to10s_inside": 0.09821, "rms_diff_10to16s": 0.04458, "outside/inside_ratio_pre": 0.154, "outside/inside_ratio_post": 0.454},
+      "interpretation": "without the fix, the post-mask leakage (10-16s) was actually LARGER than the intended in-mask difference (ratio 1.233 -- leakage exceeded the edit itself). With fix_alpha=0.025, outside-mask difference drops ~4x (pre-mask) and ~2.5x (post-mask), while the inside-mask edit strength is preserved (0.0916 -> 0.0982, not diminished). The fixalpha files are the ones that actually match the paper's documented procedure."
+    }
+  }
+}

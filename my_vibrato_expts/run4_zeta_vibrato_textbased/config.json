@@ -1,0 +1,30 @@
+{
+  "experiment": "run4_zeta_vibrato_textbased",
+  "description": "Alternative to the PCA-based (ZEUS) vibrato edits in run1-3: uses the same repo's TEXT-based editing mode (ZETA, main_run.py) instead. Fully deterministic given fixed inputs -- no PCA/power-iteration, no eigenvector sign ambiguity, no uncalibrated eigenvalue, no hand-picked PC index. Source and target prompts kept nearly identical except the inserted vibrato phrase, following the paper's own convention (Fig. 3: 'bold marks changed text') so the model localizes the edit to that one attribute rather than regenerating everything.",
+  "input_audio": "same 16-second clip as run2/run3 (first 16s of full MDDBGospel.mp3)",
+  "model": {
+    "model_id": "cvssp/audioldm2-music",
+    "source_prompt": "A recording of ryhtmic clapping, a women singing, and drums and guitar playing.",
+    "target_prompt": "A recording of ryhtmic clapping, a women singing with a strong vocal vibrato, and drums and guitar playing.",
+    "note": "only the inserted phrase 'with a strong vocal vibrato' differs between source and target"
+  },
+  "command": "CUDA_VISIBLE_DEVICES=0 python main_run.py --init_aud MDDBGospel_16sec.wav --model_id cvssp/audioldm2-music --source_prompt \"A recording of ryhtmic clapping, a women singing, and drums and guitar playing.\" --target_prompt \"A recording of ryhtmic clapping, a women singing with a strong vocal vibrato, and drums and guitar playing.\" --tstart 100 --results_path results_zeta_vibrato",
+  "key_parameters": {
+    "cfg_src": 3, "cfg_tar": 12, "tstart": 100, "mode": "ours (DDPM inversion, default)",
+    "num_diffusion_steps": 200, "seed": null,
+    "note_on_determinism": "no seed needed for reproducibility of the EDIT DIRECTION itself (unlike ZEUS/PCA) since there's no random power-iteration involved -- same source/target prompt pair always specifies the same semantic direction. A seed would only matter for exact bit-reproducibility of the model's internal sampling, not for which concept gets edited."
+  },
+  "runtime": {"wallclock_sec": "~53s total (200-step inversion + 100-step generation, since tstart=100 skips the first 100 of 200 generation steps)"},
+  "repo_quirk_found": {
+    "issue": "main_run.py builds its save path as `f'./{args.results_path}/'` (main_run.py line ~137) -- plain string concatenation, not os.path.join. Passing an absolute --results_path does NOT make the output land there; it gets glued onto './' and resolves relative to the script's CWD.",
+    "actual_output_location": "ended up at code/workspace/AudioEditingCode/results_zeta_vibrato/... (nested under the code/ dir we ran from) instead of the intended /workspace/AudioEditingCode/results_zeta_vibrato/",
+    "workaround_used": "just located and copied the files from the actual nested path rather than patching the script",
+    "affects": "main_run.py and main_run_sdedit.py only (main_pc_extract_inv.py / main_pc_apply_drift.py use os.path.join correctly and were not affected)"
+  },
+  "outputs": {
+    "orig.wav": "true source clip, re-synthesized (mel + HiFi-GAN vocoding)",
+    "zeta_vibrato_edit.wav": "the text-based edited output (target prompt applied, tstart=100)",
+    "zeta_vibrato_edit_spectrogram.png": "mel-spectrogram of the edited output"
+  },
+  "comparison_purpose": "Listen against run1/run2/run3's PCA-based vibrato attempts. If this sounds like a cleaner, more controlled vibrato increase without the PCA runs' instrumental-balance shifts or in-edit weirdness, that's evidence the instability we've been chasing is specific to ZEUS's unsupervised-direction-discovery step, not to this DDPM-inversion backbone in general."
+}

@@ -1,0 +1,87 @@
+{
+  "orig": {
+    "frac_voiced_full": 0.6435546875,
+    "median_f0_hz_full": 389.7377084050387,
+    "median_f0_hz_masked_5to10s": 387.49298438230534,
+    "vibrato_rms_cents_full": 121.20074302865245,
+    "rms_harmonic_full": 0.0588609017431736,
+    "rms_percussive_full": 0.047055818140506744,
+    "percussive_frac_of_total_full": 0.5410733319934418,
+    "percussive_frac_of_total_masked_5to10s": 0.5240085011722535,
+    "low_freq(<150Hz)_energy_frac": 0.1047731414437294,
+    "vocal_band(300-3400Hz)_energy_frac": 0.6089435815811157
+  },
+  "recon_noPC": {
+    "frac_voiced_full": 0.6598440545808967,
+    "median_f0_hz_full": 387.49298438230534,
+    "median_f0_hz_masked_5to10s": 385.26118901858945,
+    "vibrato_rms_cents_full": 119.69893463283177,
+    "rms_harmonic_full": 0.05644185096025467,
+    "rms_percussive_full": 0.04362893104553223,
+    "percussive_frac_of_total_full": 0.5297220155680545,
+    "percussive_frac_of_total_masked_5to10s": 0.5043683674355863,
+    "low_freq(<150Hz)_energy_frac": 0.10039497911930084,
+    "vocal_band(300-3400Hz)_energy_frac": 0.6081401705741882
+  },
+  "a2": {
+    "frac_voiced_full": 0.6578947368421053,
+    "median_f0_hz_full": 389.7377084050387,
+    "median_f0_hz_masked_5to10s": 391.9954359817493,
+    "vibrato_rms_cents_full": 113.24948365683562,
+    "rms_harmonic_full": 0.05955630913376808,
+    "rms_percussive_full": 0.0429493747651577,
+    "percussive_frac_of_total_full": 0.4929564788106449,
+    "percussive_frac_of_total_masked_5to10s": 0.48092541851289583,
+    "low_freq(<150Hz)_energy_frac": 0.11570131778717041,
+    "vocal_band(300-3400Hz)_energy_frac": 0.5539770722389221
+  },
+  "a-2": {
+    "frac_voiced_full": 0.7884990253411306,
+    "median_f0_hz_full": 372.1377785978373,
+    "median_f0_hz_masked_5to10s": 385.26118901858945,
+    "vibrato_rms_cents_full": 193.94705667941255,
+    "rms_harmonic_full": 0.04335082322359085,
+    "rms_percussive_full": 0.03203462436795235,
+    "percussive_frac_of_total_full": 0.5192005189089557,
+    "percussive_frac_of_total_masked_5to10s": 0.5604232934713156,
+    "low_freq(<150Hz)_energy_frac": 0.09010200947523117,
+    "vocal_band(300-3400Hz)_energy_frac": 0.58156418800354
+  }
+}
+
+Top 15 frequency bins by |a2 - a-2| spectral difference (full signal):
+    492.2 Hz : 5.4626
+    500.0 Hz : 5.2507
+     62.5 Hz : 4.9818
+     54.7 Hz : 4.8698
+     93.8 Hz : 4.7679
+    195.3 Hz : 4.6415
+     78.1 Hz : 4.6206
+    101.6 Hz : 4.5836
+     70.3 Hz : 4.5084
+    992.2 Hz : 4.2959
+    203.1 Hz : 4.1542
+     46.9 Hz : 4.1451
+     85.9 Hz : 3.8120
+    984.4 Hz : 3.7248
+    375.0 Hz : 3.6965
+
+Top 15 frequency bins by |a2 - a-2| spectral difference (masked window 5-10s ONLY):
+    500.0 Hz : 8.0079
+    492.2 Hz : 7.7385
+    375.0 Hz : 7.0126
+    367.2 Hz : 6.9095
+    390.6 Hz : 6.6869
+    992.2 Hz : 6.4442
+    382.8 Hz : 5.4345
+    789.1 Hz : 5.3254
+    781.2 Hz : 5.3099
+    984.4 Hz : 5.1140
+    359.4 Hz : 4.6439
+    484.4 Hz : 4.6070
+   1000.0 Hz : 4.5895
+    507.8 Hz : 4.2024
+    398.4 Hz : 4.1222
+
+[full signal] diff energy <150Hz: 58.1608 | vocal(300-3400Hz): 333.5255 | total: 600.5287
+[masked 5-10s] diff energy <150Hz: 35.2352 | vocal(300-3400Hz): 447.5319 | total: 703.5373

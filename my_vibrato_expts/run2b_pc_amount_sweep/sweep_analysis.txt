@@ -1,0 +1,88 @@
+{
+  "pc1_a1.5": {
+    "rms_diff_vs_baseline_inside_mask": 0.07363742589950562,
+    "rms_diff_vs_baseline_outside_pre": 0.018794715404510498,
+    "rms_diff_vs_baseline_outside_post": 0.023074962198734283,
+    "spectral_flux_inside_mask": 0.622672975063324,
+    "spectral_flux_ratio_vs_baseline": 1.0027743577957153
+  },
+  "pc1_a-1.5": {
+    "rms_diff_vs_baseline_inside_mask": 0.08442714065313339,
+    "rms_diff_vs_baseline_outside_pre": 0.015959855169057846,
+    "rms_diff_vs_baseline_outside_post": 0.028782451525330544,
+    "spectral_flux_inside_mask": 0.5095035433769226,
+    "spectral_flux_ratio_vs_baseline": 0.8205223679542542
+  },
+  "pc2_a1.5": {
+    "rms_diff_vs_baseline_inside_mask": 0.07684151083230972,
+    "rms_diff_vs_baseline_outside_pre": 0.013376248069107533,
+    "rms_diff_vs_baseline_outside_post": 0.036296043545007706,
+    "spectral_flux_inside_mask": 0.6441292762756348,
+    "spectral_flux_ratio_vs_baseline": 1.0373283624649048
+  },
+  "pc2_a-1.5": {
+    "rms_diff_vs_baseline_inside_mask": 0.08502868562936783,
+    "rms_diff_vs_baseline_outside_pre": 0.014586525037884712,
+    "rms_diff_vs_baseline_outside_post": 0.02831984870135784,
+    "spectral_flux_inside_mask": 0.5128105282783508,
+    "spectral_flux_ratio_vs_baseline": 0.8258480429649353
+  },
+  "pc3_a0.5": {
+    "rms_diff_vs_baseline_inside_mask": 0.0354088731110096,
+    "rms_diff_vs_baseline_outside_pre": 0.006144817918539047,
+    "rms_diff_vs_baseline_outside_post": 0.009991560131311417,
+    "spectral_flux_inside_mask": 0.6465835571289062,
+    "spectral_flux_ratio_vs_baseline": 1.0412808656692505
+  },
+  "pc3_a-0.5": {
+    "rms_diff_vs_baseline_inside_mask": 0.03763260319828987,
+    "rms_diff_vs_baseline_outside_pre": 0.005356124136596918,
+    "rms_diff_vs_baseline_outside_post": 0.00849917158484459,
+    "spectral_flux_inside_mask": 0.5843558311462402,
+    "spectral_flux_ratio_vs_baseline": 0.941067099571228
+  },
+  "pc3_a1.0": {
+    "rms_diff_vs_baseline_inside_mask": 0.06143293157219887,
+    "rms_diff_vs_baseline_outside_pre": 0.010647903196513653,
+    "rms_diff_vs_baseline_outside_post": 0.022935543209314346,
+    "spectral_flux_inside_mask": 0.6581249833106995,
+    "spectral_flux_ratio_vs_baseline": 1.05986750125885
+  },
+  "pc3_a-1.0": {
+    "rms_diff_vs_baseline_inside_mask": 0.07154935598373413,
+    "rms_diff_vs_baseline_outside_pre": 0.012954339385032654,
+    "rms_diff_vs_baseline_outside_post": 0.02102058008313179,
+    "spectral_flux_inside_mask": 0.5067480206489563,
+    "spectral_flux_ratio_vs_baseline": 0.8160848021507263
+  },
+  "pc3_a1.5": {
+    "rms_diff_vs_baseline_inside_mask": 0.07594697922468185,
+    "rms_diff_vs_baseline_outside_pre": 0.014310157857835293,
+    "rms_diff_vs_baseline_outside_post": 0.02963825687766075,
+    "spectral_flux_inside_mask": 0.6648930311203003,
+    "spectral_flux_ratio_vs_baseline": 1.0707670450210571
+  },
+  "pc3_a-1.5": {
+    "rms_diff_vs_baseline_inside_mask": 0.08547277748584747,
+    "rms_diff_vs_baseline_outside_pre": 0.01679321564733982,
+    "rms_diff_vs_baseline_outside_post": 0.03216418996453285,
+    "spectral_flux_inside_mask": 0.46979933977127075,
+    "spectral_flux_ratio_vs_baseline": 0.7565813064575195
+  },
+  "pc3_a2.0": {
+    "rms_diff_vs_baseline_inside_mask": 0.09027756005525589,
+    "rms_diff_vs_baseline_outside_pre": 0.016234803944826126,
+    "rms_diff_vs_baseline_outside_post": 0.038323622196912766,
+    "spectral_flux_inside_mask": 0.658068060874939,
+    "spectral_flux_ratio_vs_baseline": 1.0597758293151855
+  },
+  "pc3_a-2.0": {
+    "rms_diff_vs_baseline_inside_mask": 0.08898575603961945,
+    "rms_diff_vs_baseline_outside_pre": 0.01704794354736805,
+    "rms_diff_vs_baseline_outside_post": 0.0347169004380703,
+    "spectral_flux_inside_mask": 0.48339858651161194,
+    "spectral_flux_ratio_vs_baseline": 0.7784820199012756
+  }
+}
+
+(reference) spectral_flux_inside_mask for baseline (recon_noPC): 0.6210

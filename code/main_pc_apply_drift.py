@@ -28,7 +28,7 @@ if __name__ == "__main__":
     parser.add_argument('--fade_length', type=float, default=0., help="Fading mask length")
     parser.add_argument("--evs", type=int, nargs='+', default=[1], help="PCs to apply")
     parser.add_argument('--combine_evs', action='store_true', help="Apply the specified PCs together")
-    parser.add_argument('--evals_pt', type=str, default="./eigvals.pt", help="Use precomputed eigvalues")
+    parser.add_argument('--evals_pt', type=str, default=None, help="Use precomputed eigvalues")  # own evals
 
     parser.add_argument('--rand_v', action='store_true')
 

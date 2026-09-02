@@ -1,0 +1,72 @@
+{
+  "orig": {
+    "frac_voiced": 0.32633587786259544,
+    "median_f0_hz": 83.8473362790669,
+    "vibrato_rms_cents": 107.6409067163143,
+    "vibrato_rate_hz": 4.385964912280701,
+    "rms_harmonic": 0.06903762370347977,
+    "rms_percussive": 0.06121016666293144,
+    "rms_total": 0.10974036902189255,
+    "percussive_frac_of_total": 0.5577725608952562,
+    "low_freq(<150Hz)_energy_frac": 0.1508246511220932,
+    "vocal_band(300-3400Hz)_energy_frac": 0.5457621812820435
+  },
+  "recon_noPC": {
+    "frac_voiced": 0.31749049429657794,
+    "median_f0_hz": 82.88426748110167,
+    "vibrato_rms_cents": 131.00981205588792,
+    "vibrato_rate_hz": 4.116766467065868,
+    "rms_harmonic": 0.06889389455318451,
+    "rms_percussive": 0.06164117529988289,
+    "rms_total": 0.10966581851243973,
+    "percussive_frac_of_total": 0.5620819334229539,
+    "low_freq(<150Hz)_energy_frac": 0.14360342919826508,
+    "vocal_band(300-3400Hz)_energy_frac": 0.5460035800933838
+  },
+  "a2": {
+    "frac_voiced": 0.376425855513308,
+    "median_f0_hz": 82.88426748110167,
+    "vibrato_rms_cents": 119.76312504252941,
+    "vibrato_rate_hz": 3.472222222222222,
+    "rms_harmonic": 0.08931003510951996,
+    "rms_percussive": 0.10526664555072784,
+    "rms_total": 0.16764119267463684,
+    "percussive_frac_of_total": 0.6279282786721314,
+    "low_freq(<150Hz)_energy_frac": 0.17247074842453003,
+    "vocal_band(300-3400Hz)_energy_frac": 0.4667452573776245
+  },
+  "a-2": {
+    "frac_voiced": 0.344106463878327,
+    "median_f0_hz": 293.6647679174075,
+    "vibrato_rms_cents": 386.9053912310721,
+    "vibrato_rate_hz": 3.453038674033149,
+    "rms_harmonic": 0.07235004007816315,
+    "rms_percussive": 0.13998450338840485,
+    "rms_total": 0.17397043108940125,
+    "percussive_frac_of_total": 0.8046453785957945,
+    "low_freq(<150Hz)_energy_frac": 0.0794333666563034,
+    "vocal_band(300-3400Hz)_energy_frac": 0.5552036166191101
+  }
+}
+
+Top 15 frequency bins by |a2 - a-2| spectral difference (Hz : avg magnitude diff):
+     78.1 Hz : 37.0106
+     85.9 Hz : 32.0040
+     70.3 Hz : 26.6969
+     93.8 Hz : 21.5168
+    195.3 Hz : 20.9366
+     62.5 Hz : 19.1907
+     54.7 Hz : 17.4701
+    187.5 Hz : 16.6047
+    101.6 Hz : 16.2625
+    132.8 Hz : 15.8217
+     46.9 Hz : 15.7475
+    203.1 Hz : 15.5282
+    125.0 Hz : 15.2303
+    109.4 Hz : 15.0459
+    117.2 Hz : 14.1347
+
+diff energy <150Hz: 301.2989
+diff energy 300-3400Hz (vocal): 1328.4692
+diff energy >3400Hz: 778.8663
+total diff energy: 2594.5276

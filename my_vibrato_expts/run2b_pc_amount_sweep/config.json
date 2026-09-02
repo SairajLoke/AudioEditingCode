@@ -1,0 +1,39 @@
+{
+  "experiment": "run2b_pc_amount_sweep",
+  "description": "Diagnostic sweep triggered by user report that the voice sounds 'weird'/broken specifically inside the masked vibrato-edit region (5-10s), not at the mask boundaries. Tests whether this is a strength (amount) issue and/or specific to PC#3, by trying PC#1 and PC#2 at a moderate strength, and a fuller amount sweep on PC#3. Apply-only against the SAME extraction checkpoint as run2_16sec_masked_pc3 -- no re-extraction. fix_alpha=0.025 used throughout (the corrected config from run2's data_leakage_correction).",
+  "extraction_reused": "../run2_16sec_masked_pc3/config.json (same .pt checkpoint, same mask [128,256], same source prompt, same drift_start/end/use_specific_ts_pc)",
+  "commands": {
+    "template": "CUDA_VISIBLE_DEVICES=0 python main_pc_apply_drift.py --extraction_path <run2's extraction .pt> --drift_start 150 --drift_end -1 --use_specific_ts_pc 120 --fix_alpha 0.025 --evs <EV> --amount <AMOUNT>",
+    "configs_run": [
+      {"evs": 1, "amount": 1.5}, {"evs": 1, "amount": -1.5},
+      {"evs": 2, "amount": 1.5}, {"evs": 2, "amount": -1.5},
+      {"evs": 3, "amount": 0.5}, {"evs": 3, "amount": -0.5},
+      {"evs": 3, "amount": 1.0}, {"evs": 3, "amount": -1.0},
+      {"evs": 3, "amount": 1.5}, {"evs": 3, "amount": -1.5},
+      {"evs": 3, "amount": 2.0, "note": "already existed from run2, not re-run, included in analysis for reference"},
+      {"evs": 3, "amount": -2.0, "note": "already existed from run2, not re-run, included in analysis for reference"}
+    ]
+  },
+  "outputs": {
+    "pc1_..._a1.5.wav / a-1.5.wav": "PC#1 at strength 1.5, both signs",
+    "pc2_..._a1.5.wav / a-1.5.wav": "PC#2 at strength 1.5, both signs",
+    "pc3_..._a0.5/a-0.5/a1.0/a-1.0/a1.5/a-1.5.wav": "PC#3 amount sweep (pc3_a2.0/a-2.0 are in run2_16sec_masked_pc3/, not duplicated here)",
+    "sweep_analysis.txt": "quantitative comparison across all 12 configs: RMS deviation from the zero-edit baseline (inside mask / outside mask pre / outside mask post) and a spectral-flux 'roughness' proxy inside the mask, relative to baseline"
+  },
+  "analysis_method": {
+    "baseline": "reconstruction_noPC.wav from run2's extraction (zero-edit, same inversion trajectory)",
+    "rms_diff_vs_baseline": "RMS(edited - baseline), computed separately for 0-5s (pre-mask), 5-10s (inside mask), 10-16s (post-mask)",
+    "spectral_flux_inside_mask": "sqrt(mean((S[:,1:] - S[:,:-1])^2)) on the magnitude STFT restricted to the 5-10s window -- a crude proxy for how erratically the spectrum changes frame-to-frame. Reported as a ratio against the same measure computed on the baseline (recon_noPC) for the same window.",
+    "caveat": "spectral flux is NOT a validated proxy for perceived audio 'brokenness' -- it's a rough stand-in used only because it's cheap and directional. Treat findings below as a hypothesis to check by ear, not a conclusion."
+  },
+  "finding": {
+    "question": "does the reported 'weirdness/breaking' inside the mask scale with amount (strength), suggesting a simple fix (turn it down), or is it something more structural?",
+    "observations": [
+      "RMS deviation from baseline scales smoothly and monotonically with |amount| for PC#3 (0.035 -> 0.061 -> 0.076 -> 0.090 for amount 0.5/1.0/1.5/2.0 positive; similar magnitudes negative) -- the amount knob itself behaves sanely, nothing erratic there.",
+      "spectral_flux_ratio_vs_baseline does NOT escalate proportionally with |amount|: positive-amount side stays roughly flat at ~1.04-1.07 across the entire 0.5->2.0 range; negative-amount side drops from ~0.94 (at 0.5) to ~0.76-0.82 and plateaus by 1.0-1.5 -- i.e. it does not keep getting worse as amount increases toward 2.0.",
+      "PC#1 and PC#2 at amount=1.5 show a similar positive/negative flux-ratio asymmetry pattern to PC#3 at the same strength (~1.00-1.04 positive, ~0.82-0.83 negative) -- this asymmetry looks more like a property of this particular audio/extraction than something unique to PC#3."
+    ],
+    "interpretation": "if the perceived brokenness were purely a magnitude/strength problem, this flux proxy would be expected to escalate smoothly with amount -- it largely doesn't. This suggests amount alone is unlikely to be the full explanation, though this proxy is crude and not a substitute for actually listening. Two structural candidates remain from earlier discussion (see run2's config.json and the surrounding conversation): (1) our eigenvalue is self-referential (no seed fixed, and the paper's own averaged eigvals.pt reference file is not shipped in the repo -- see run1's config.json note on this), so 'amount=2' here isn't calibrated against the same physical scale as the paper's demo; (2) corrs.png (run1 and run2) already showed near-zero correlation between adjacent-timestep eigenvectors during extraction, meaning the single direction frozen at t=120 may not extrapolate cleanly to other timesteps across the full [150,-1] range regardless of amount.",
+    "next_step": "listen and compare directly -- particularly pc3_a0.5 vs pc3_a2.0 (isolates strength, same PC) and pc1_a1.5 / pc2_a1.5 vs pc3_a1.5 (isolates PC choice, same strength). If PC#1 or PC#2 sounds meaningfully cleaner than PC#3 at the same strength, that points to PC#3 itself being the shakier direction rather than amount. If all three PCs sound similarly rough even at amount=0.5, that points toward the more structural explanation (2) above rather than a simple strength fix."
+  }
+}
